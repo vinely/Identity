@@ -7,24 +7,27 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vinely/Identity/ont"
 	"github.com/vinely/dids"
+	chain "github.com/vinely/ontchain"
 )
 
 func addIdentity(c *gin.Context) {
 	id := c.Param("id")
 	var (
 		identity *ont.Identity
+		mi       *chain.ManagedIdentity
 		err      error
 	)
 	if id == "" {
-		identity, _, err = ont.NewIdentity()
+		identity, mi, err = ont.NewIdentity()
 	} else {
 		did := dids.ID(id)
-		identity, _, err = ont.IdentityFromID(&did)
+		identity, mi, err = ont.IdentityFromID(&did)
 	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
+	ont.SaveManagedIdentity(mi)
 	identity.SaveToDB()
 	c.JSON(http.StatusOK, identity)
 }
