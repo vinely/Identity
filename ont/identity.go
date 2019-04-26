@@ -7,6 +7,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/vinely/Identity/model"
 	"github.com/vinely/dids"
+	kvdb "github.com/vinely/kvdb"
 	chain "github.com/vinely/ontchain"
 )
 
@@ -102,6 +103,57 @@ func GetIdentityFromDB(id string) (*Identity, error) {
 		return nil, err
 	}
 	return i, nil
+}
+
+// IdentityNumber - number of identities
+func IdentityNumber() int {
+	return model.IdentityDataBase().KeyCount()
+}
+
+// IdentityList - list idenity
+func IdentityList(page uint, check func(k, v []byte) (*Identity, error)) ([]*Identity, error) {
+	db := model.IdentityDataBase()
+	data := db.List(uint(page), func(k, v []byte) *kvdb.KVResult {
+		d, err := check(k, v)
+		if err != nil {
+			return &kvdb.KVResult{
+				Result: false,
+				Info:   err.Error(),
+			}
+		}
+		return &kvdb.KVResult{
+			Data:   d,
+			Result: true,
+			Info:   "",
+		}
+	})
+	if data.Result {
+		s := data.Data.([]interface{})
+		ids := make([]*Identity, len(s))
+		for k, v := range s {
+			ids[k] = v.(*Identity)
+		}
+		return ids, nil
+	}
+	return nil, data
+
+	// too complicated
+	//
+	// res, err := model.ListIdentity(page, func(k, v []byte) (model.Identity, error) {
+	// 	i, err := check(k, v)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return model.Identity(i), err
+	// })
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// ids := make([]*Identity, len(res))
+	// for k, v := range res {
+	// 	ids[k] = v.(*Identity)
+	// }
+	// return ids, err
 }
 
 // SaveToDB - Save to database

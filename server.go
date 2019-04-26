@@ -1,7 +1,8 @@
-package Identity
+package identity
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/vinely/Identity/api"
 )
 
 var (
@@ -9,14 +10,10 @@ var (
 	basePath = "/api/v1"
 )
 
-func idget(c *gin.Context) {
-
-}
-
 // RunService - run server
 func RunService() error {
 	e := gin.Default()
-	e.GET(basePath+"did/id/:id", idget)
-
+	apiv1 := e.Group(basePath)
+	api.RegisterIdentityAPI(apiv1)
 	return e.Run(":8080")
 }

@@ -27,3 +27,31 @@ func GetIdentity(i Identity, id string) error {
 func SetIdentity(id string, i Identity) error {
 	return set(keyDB, id, i)
 }
+
+// // ListIdentity - list identity
+// too complicated
+// func ListIdentity(page uint, check func(k, v []byte) (Identity, error)) ([]Identity, error) {
+// 	data := didDB.List(uint(page), func(k, v []byte) *kvdb.KVResult {
+// 		d, err := check(k, v)
+// 		if err != nil {
+// 			return &kvdb.KVResult{
+// 				Result: false,
+// 				Info:   err.Error(),
+// 			}
+// 		}
+// 		return &kvdb.KVResult{
+// 			Data:   d,
+// 			Result: true,
+// 			Info:   "",
+// 		}
+// 	})
+// 	if data.Result {
+// 		return data.Data.([]Identity), nil
+// 	}
+// 	return nil, data
+// }
+
+// IdentityDataBase - kv database of identity
+func IdentityDataBase() kvdb.KVMethods {
+	return keyDB
+}
