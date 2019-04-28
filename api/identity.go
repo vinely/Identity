@@ -68,6 +68,10 @@ func getTotalIdentity(c *gin.Context) {
 	c.JSON(http.StatusOK, ont.IdentityNumber())
 }
 
+func readAdminIdentity(c *gin.Context) {
+	c.JSON(http.StatusOK, ont.Admin)
+}
+
 func updateIdentity(c *gin.Context) {
 	i := &ont.Identity{}
 	c.BindJSON(i)
@@ -86,6 +90,7 @@ func RegisterIdentityAPI(r *gin.RouterGroup) {
 	r.GET("/identity", listIdentity)
 	r.GET("/identity/id/:id", readIdentity)
 	r.GET("/identity/total", getTotalIdentity)
+	r.GET("/identity/admin", readAdminIdentity)
 
 	// need authentication
 	r.POST("/identity/id/:id", updateIdentity)
