@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/base64"
+
 	jsoniter "github.com/json-iterator/go"
 	kvdb "github.com/vinely/kvdb"
 	"golang.org/x/crypto/sha3"
@@ -27,6 +29,18 @@ type Claims interface {
 	ID() string
 	Get(id string) error
 	Set() error
+	Hdr() string
+	Cont() string
+}
+
+// GetClaims - get claims from database
+func GetClaims(c Claims, id string) error {
+	return get(claimStatusDB, c, id)
+}
+
+// SetClaims - set claims to database
+func SetClaims(c Claims, id string) error {
+	return set(claimStatusDB, id, c)
 }
 
 // ClaimHeader - header of claim.
@@ -47,8 +61,10 @@ func (hd *ClaimHeader) ID() string {
 	if err != nil {
 		return ""
 	}
+	// now simply using sha3.
+	// TODO change hmac method with algorith
 	id := sha3.Sum224(data)
-	return string(id[:])
+	return base64.URLEncoding.EncodeToString(id[:])
 }
 
 // Marshal - convert  json claimheader to string ([]byte)
@@ -77,61 +93,23 @@ func (hd *ClaimHeader) Set() error {
 	return set(claimHeaderDB, hd.ID(), hd)
 }
 
-// ClaimStatus - status of claim. maybe changed a lot
-type ClaimStatus struct {
-	Owner     string `json:"owner"`
-	Status    bool   `json:"st"` // status of claims. valid or other status
-	IssuedAt  int64  `json:"iat,omitempty"`
-	Audience  string `json:"aud,omitempty"`
-	ExpiresAt int64  `json:"exp,omitempty"`
-	NotBefore int64  `json:"nbf,omitempty"`
-}
-
-// ID - get id from status
-func (s *ClaimStatus) ID() string {
-	// return s.Owner + "#st"
-	// now using header id. don't need fragment
-	return s.Owner
-}
-
-// Marshal - convert  json status to string ([]byte)
-func (s *ClaimStatus) Marshal() ([]byte, error) {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Marshal(*s)
-}
-
-// Unmarshal - convert  json string ([]byte) to status
-func (s *ClaimStatus) Unmarshal(data []byte) error {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	err := json.Unmarshal(data, s)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Get - get status from database
-func (s *ClaimStatus) Get(id string) error {
-	return get(claimStatusDB, s, id)
-}
-
-// Set - set status to database
-func (s *ClaimStatus) Set() error {
-	return set(claimStatusDB, s.ID(), s)
-}
-
 // ClaimContent - Content of Claim
 type ClaimContent struct {
-	Owner    string                 `json:"owner"`
 	Scope    map[string]interface{} `json:"scp,omitempty"`
 	Contents map[string]interface{} `json:"cnt,omitempty"`
 }
 
 // ID - get id from content
 func (c *ClaimContent) ID() string {
-	// return c.Owner + "#cnt"
-	// now using header id. don't need fragment
-	return c.Owner
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	data, err := json.Marshal(c)
+	if err != nil {
+		return ""
+	}
+	// now simply using sha3.
+	// TODO change hmac method with algorith
+	id := sha3.Sum224(data)
+	return base64.URLEncoding.EncodeToString(id[:])
 }
 
 // Marshal - convert  json content to string ([]byte)
@@ -163,13 +141,8 @@ func (c *ClaimContent) Set() error {
 // StandardClaim - Basic elements for claim
 type StandardClaim struct {
 	Header  *ClaimHeader  `json:"header"`
-	Status  *ClaimStatus  `json:"status"`
 	Content *ClaimContent `json:"content"`
-}
-
-// ID - get id from content
-func (s *StandardClaim) ID() string {
-	return s.Status.ID()
+	Claim   Claims        `json:"status"`
 }
 
 // Marshal - convert  json status to string ([]byte)
@@ -189,21 +162,20 @@ func (s *StandardClaim) Unmarshal(data []byte) error {
 }
 
 // Get - get status from database
-func (s *StandardClaim) Get(id string) error {
-	header := &ClaimHeader{}
-	if err := header.Get(id); err != nil {
+func (s *StandardClaim) Get(c Claims, id string) error {
+	if err := GetClaims(c, id); err != nil {
 		return err
 	}
-	status := &ClaimStatus{}
-	if err := status.Get(id); err != nil {
+	header := &ClaimHeader{}
+	if err := header.Get(c.Hdr()); err != nil {
 		return err
 	}
 	content := &ClaimContent{}
-	if err := content.Get(id); err != nil {
+	if err := content.Get(c.Cont()); err != nil {
 		return err
 	}
+	s.Claim = c
 	s.Header = header
-	s.Status = status
 	s.Content = content
 	return nil
 }
@@ -213,7 +185,7 @@ func (s *StandardClaim) Set() error {
 	if err := s.Header.Set(); err != nil {
 		return err
 	}
-	if err := s.Status.Set(); err != nil {
+	if err := s.Claim.Set(); err != nil {
 		return err
 	}
 	if err := s.Content.Set(); err != nil {
