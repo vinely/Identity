@@ -10,4 +10,5 @@ require (
 	github.com/vinely/dids v0.0.0-20190424052557-fbf13990c377
 	github.com/vinely/kvdb v0.0.0-20190227093626-92e007cbce7b
 	github.com/vinely/ontchain v0.0.0-20190312032940-396ff2d56311
+	golang.org/x/crypto v0.0.0-20190228050851-31a38585487a
 )

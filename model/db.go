@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+
 	kvdb "github.com/vinely/kvdb"
 )
 
@@ -9,10 +11,13 @@ import (
 type Value interface {
 	Marshal() ([]byte, error)
 	Unmarshal(data []byte) error // this method need Unmarshal data to interface.
-	Value() interface{}          // return struct value for this point
+	// Value() interface{}          // return struct value for this point
 }
 
 func get(db kvdb.KVMethods, v Value, id string) error {
+	if v == nil {
+		return errors.New("Value can't be nil. Need alloc some memory space")
+	}
 	info := db.Get(id)
 	if !info.Result {
 		return info
@@ -35,6 +40,7 @@ func del(db kvdb.KVMethods, id string) error {
 	return nil
 }
 
+// just example. using this is redundancy nest
 func list(db kvdb.KVMethods, page uint, check func(k, v []byte) (Value, error)) ([]Value, error) {
 	data := didDB.List(uint(page), func(k, v []byte) *kvdb.KVResult {
 		d, err := check(k, v)
