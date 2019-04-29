@@ -23,14 +23,19 @@ func init() {
 	claimContentDB = d.(*kvdb.BoltDB)
 }
 
+// ClaimDB - get claim status db
+func ClaimDB() *kvdb.BoltDB {
+	return claimStatusDB
+}
+
 // Claims - For a type to be a Claims object
 type Claims interface {
 	Value
 	ID() string
 	Get(id string) error
 	Set() error
-	Hdr() string
-	Cont() string
+	Hdr() (*ClaimHeader, error)
+	Cont() (*ClaimContent, error)
 }
 
 // GetClaims - get claims from database
@@ -93,6 +98,34 @@ func (hd *ClaimHeader) Set() error {
 	return set(claimHeaderDB, hd.ID(), hd)
 }
 
+// FindHeader - find some claim header
+func FindHeader(page uint, check func(k, v []byte) (*ClaimHeader, error)) ([]*ClaimHeader, error) {
+	db := claimHeaderDB
+	data := db.List(uint(page), func(k, v []byte) *kvdb.KVResult {
+		d, err := check(k, v)
+		if err != nil {
+			return &kvdb.KVResult{
+				Result: false,
+				Info:   err.Error(),
+			}
+		}
+		return &kvdb.KVResult{
+			Data:   d,
+			Result: true,
+			Info:   "",
+		}
+	})
+	if data.Result {
+		s := data.Data.([]interface{})
+		cs := make([]*ClaimHeader, len(s))
+		for k, v := range s {
+			cs[k] = v.(*ClaimHeader)
+		}
+		return cs, nil
+	}
+	return nil, data
+}
+
 // ClaimContent - Content of Claim
 type ClaimContent struct {
 	Scope    map[string]interface{} `json:"scp,omitempty"`
@@ -138,6 +171,34 @@ func (c *ClaimContent) Set() error {
 	return set(claimContentDB, c.ID(), c)
 }
 
+// FindContent - find some claim content
+func FindContent(page uint, check func(k, v []byte) (*ClaimContent, error)) ([]*ClaimContent, error) {
+	db := claimContentDB
+	data := db.List(uint(page), func(k, v []byte) *kvdb.KVResult {
+		d, err := check(k, v)
+		if err != nil {
+			return &kvdb.KVResult{
+				Result: false,
+				Info:   err.Error(),
+			}
+		}
+		return &kvdb.KVResult{
+			Data:   d,
+			Result: true,
+			Info:   "",
+		}
+	})
+	if data.Result {
+		s := data.Data.([]interface{})
+		cs := make([]*ClaimContent, len(s))
+		for k, v := range s {
+			cs[k] = v.(*ClaimContent)
+		}
+		return cs, nil
+	}
+	return nil, data
+}
+
 // StandardClaim - Basic elements for claim
 type StandardClaim struct {
 	Header  *ClaimHeader  `json:"header"`
@@ -166,12 +227,12 @@ func (s *StandardClaim) Get(c Claims, id string) error {
 	if err := GetClaims(c, id); err != nil {
 		return err
 	}
-	header := &ClaimHeader{}
-	if err := header.Get(c.Hdr()); err != nil {
+	header, err := c.Hdr()
+	if err != nil {
 		return err
 	}
-	content := &ClaimContent{}
-	if err := content.Get(c.Cont()); err != nil {
+	content, err := c.Cont()
+	if err != nil {
 		return err
 	}
 	s.Claim = c

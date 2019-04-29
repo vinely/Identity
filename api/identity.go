@@ -83,7 +83,7 @@ func updateIdentity(c *gin.Context) {
 	c.JSON(http.StatusOK, i)
 }
 
-// RegisterIdentityAPI - register claim api to gin engine
+// RegisterIdentityAPI - register Identit api to gin engine
 func RegisterIdentityAPI(r *gin.RouterGroup) {
 
 	r.PUT("/identity", addIdentity)

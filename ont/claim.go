@@ -1,8 +1,11 @@
 package ont
 
 import (
+	"time"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/vinely/Identity/model"
+	kvdb "github.com/vinely/kvdb"
 )
 
 var (
@@ -15,8 +18,8 @@ var (
 // 	ID() string
 // 	Get(id string) error
 // 	Set() error
-// 	Hdr() string
-// 	Cont() string
+// Hdr() (*ClaimHeader, error)
+// Cont() (*ClaimContent, error)
 // }
 
 // ClaimStatus - status of claim. maybe changed a lot
@@ -47,17 +50,21 @@ func (s *ClaimStatus) Verify() bool {
 
 // ID - get id from status
 func (s *ClaimStatus) ID() string {
-	return s.Hdr() + seperator + s.Cont()
+	return s.Header + seperator + s.Content
 }
 
 // Hdr - get id from header
-func (s *ClaimStatus) Hdr() string {
-	return s.Header
+func (s *ClaimStatus) Hdr() (*model.ClaimHeader, error) {
+	h := &model.ClaimHeader{}
+	err := h.Get(s.Header)
+	return h, err
 }
 
 // Cont - get id from content
-func (s *ClaimStatus) Cont() string {
-	return s.Content
+func (s *ClaimStatus) Cont() (*model.ClaimContent, error) {
+	c := &model.ClaimContent{}
+	err := c.Get(s.Content)
+	return c, err
 }
 
 // Marshal - convert  json status to string ([]byte)
@@ -86,4 +93,73 @@ func (s *ClaimStatus) Set() error {
 	return model.SetClaims(s, s.ID())
 }
 
+// ClaimList - list claim
+func ClaimList(page uint, check func(k, v []byte) (*ClaimStatus, error)) ([]*ClaimStatus, error) {
+	db := model.ClaimDB()
+	data := db.List(uint(page), func(k, v []byte) *kvdb.KVResult {
+		d, err := check(k, v)
+		if err != nil {
+			return &kvdb.KVResult{
+				Result: false,
+				Info:   err.Error(),
+			}
+		}
+		return &kvdb.KVResult{
+			Data:   d,
+			Result: true,
+			Info:   "",
+		}
+	})
+	if data.Result {
+		s := data.Data.([]interface{})
+		cs := make([]*ClaimStatus, len(s))
+		for k, v := range s {
+			cs[k] = v.(*ClaimStatus)
+		}
+		return cs, nil
+	}
+	return nil, data
 
+}
+
+// NewHeader - Create a claim header
+func NewHeader(t, subject, issuer string) (*model.ClaimHeader, string, error) {
+	ch := &model.ClaimHeader{
+		Type:    t,
+		Subject: subject,
+		Issuer:  issuer,
+	}
+	return ch, ch.ID(), ch.Set()
+}
+
+// NewContent - Create a claim content
+func NewContent(scope, content map[string]interface{}) (*model.ClaimContent, string, error) {
+	cc := &model.ClaimContent{
+		Scope:    scope,
+		Contents: content,
+	}
+	return cc, cc.ID(), cc.Set()
+}
+
+// NewClaim - create a claim
+func NewClaim(header, content string) (*model.StandardClaim, error) {
+	c := &ClaimStatus{}
+	c.Header = header
+	c.Content = content
+	c.Status = true
+	c.IssuedAt = time.Now().Unix()
+	c.ExpiresAt = time.Now().Add(time.Hour).Unix()
+	hd, err := c.Hdr()
+	if err != nil {
+		return nil, err
+	}
+	cnt, err := c.Cont()
+	if err != nil {
+		return nil, err
+	}
+	s := &model.StandardClaim{}
+	s.Claim = c
+	s.Header = hd
+	s.Content = cnt
+	return s, nil
+}
