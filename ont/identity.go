@@ -55,7 +55,11 @@ func IdentityFromID(id *dids.ID) (*Identity, *chain.ManagedIdentity, error) {
 
 // IdentityFromOntid - create Identity from managed identity
 func IdentityFromOntid(id *chain.ManagedIdentity) (*Identity, error) {
-	pk, err := getPublicKeyFromSDK(&id.Identity, 1)
+	identity, err := id.Identity()
+	if err != nil {
+		return nil, err
+	}
+	pk, err := getPublicKeyFromSDK(identity, 1)
 	if err != nil {
 		return nil, err
 	}

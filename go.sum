@@ -94,8 +94,9 @@ github.com/vinely/dids v0.0.0-20190424052557-fbf13990c377 h1:qrpBfbdtW+PSY023Bnx
 github.com/vinely/dids v0.0.0-20190424052557-fbf13990c377/go.mod h1:pR3LqlbVj5FkB4Z02mowlc9Zypj9Q9+ch1x31g+1QAU=
 github.com/vinely/kvdb v0.0.0-20190227093626-92e007cbce7b h1:qJOhXlKD8/Jmkz89YnaYVH0wc2KJmak4fAmTE4+smvE=
 github.com/vinely/kvdb v0.0.0-20190227093626-92e007cbce7b/go.mod h1:DGOavgQC1Y1+dy5e9D7LTJV6MSDp969WstU9EoPFGko=
-github.com/vinely/ontchain v0.0.0-20190312032940-396ff2d56311 h1:0vh7EjAFu13MR1e0yH8jnUmRnlR/soJfTAzaYt2nC7E=
 github.com/vinely/ontchain v0.0.0-20190312032940-396ff2d56311/go.mod h1:KFgvrNorBmH6IPQ1F70MQ8sh6oRgMcruPOpSNKB44ZU=
+github.com/vinely/ontchain v0.0.0-20190505101324-9c98f169a7cb h1:Z2l7SUF0aQsrIToI+FHDtA9swZo60tdwBjCL8j6wQAE=
+github.com/vinely/ontchain v0.0.0-20190505101324-9c98f169a7cb/go.mod h1:KFgvrNorBmH6IPQ1F70MQ8sh6oRgMcruPOpSNKB44ZU=
 golang.org/x/crypto v0.0.0-20190228050851-31a38585487a h1:53VJPSIh1mc/PLK5AlXoj1HHfovtbS77YvYJ0AqjSgE=
 golang.org/x/crypto v0.0.0-20190228050851-31a38585487a/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20180404174746-b3c676e531a6/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=

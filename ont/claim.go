@@ -122,25 +122,6 @@ func ClaimList(page uint, check func(k, v []byte) (*ClaimStatus, error)) ([]*Cla
 
 }
 
-// NewHeader - Create a claim header
-func NewHeader(t, subject, issuer string) (*model.ClaimHeader, string, error) {
-	ch := &model.ClaimHeader{
-		Type:    t,
-		Subject: subject,
-		Issuer:  issuer,
-	}
-	return ch, ch.ID(), ch.Set()
-}
-
-// NewContent - Create a claim content
-func NewContent(scope, content map[string]interface{}) (*model.ClaimContent, string, error) {
-	cc := &model.ClaimContent{
-		Scope:    scope,
-		Contents: content,
-	}
-	return cc, cc.ID(), cc.Set()
-}
-
 // NewClaim - create a claim
 func NewClaim(header, content string) (*model.StandardClaim, error) {
 	c := &ClaimStatus{}

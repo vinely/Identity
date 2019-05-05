@@ -254,3 +254,23 @@ func (s *StandardClaim) Set() error {
 	}
 	return nil
 }
+
+
+// NewHeader - Create a claim header
+func NewHeader(t, subject, issuer string) (*ClaimHeader, string, error) {
+	ch := &ClaimHeader{
+		Type:    t,
+		Subject: subject,
+		Issuer:  issuer,
+	}
+	return ch, ch.ID(), ch.Set()
+}
+
+// NewContent - Create a claim content
+func NewContent(scope, content map[string]interface{}) (*ClaimContent, string, error) {
+	cc := &ClaimContent{
+		Scope:    scope,
+		Contents: content,
+	}
+	return cc, cc.ID(), cc.Set()
+}

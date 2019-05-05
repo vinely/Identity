@@ -15,5 +15,6 @@ func RunService() error {
 	e := gin.Default()
 	apiv1 := e.Group(basePath)
 	api.RegisterIdentityAPI(apiv1)
+	api.RegisterClaimAPI(apiv1)
 	return e.Run(":8080")
 }

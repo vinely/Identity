@@ -62,9 +62,9 @@ func AddRandomPasswordIdentity(id string) (*chain.ManagedIdentity, error) {
 func saveToDB(id *chain.ManagedIdentity, db kvdb.KVMethods) error {
 	ret := db.SetData(id.ID, id)
 	if ret.Result {
-		return ret
+		return nil
 	}
-	return nil
+	return ret
 }
 
 // SaveIDToDB - Save managed Identity to DB
@@ -85,10 +85,12 @@ func AddRandomPasswordAccount(id string, db kvdb.KVMethods, force bool) (*chain.
 	if db.Exists(id) && !force {
 		kr := db.Get(id)
 		if kr.Result {
-			var i *chain.ManagedIdentity
+			fmt.Printf("%v\n", string(kr.Data.([]byte)))
+			i := &chain.ManagedIdentity{}
 			var json = jsoniter.ConfigCompatibleWithStandardLibrary
 			err := json.Unmarshal(kr.Data.([]byte), i)
 			if err != nil {
+
 				return nil, err
 			}
 			return i, nil

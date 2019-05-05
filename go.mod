@@ -9,6 +9,6 @@ require (
 	github.com/json-iterator/go v1.1.5
 	github.com/vinely/dids v0.0.0-20190424052557-fbf13990c377
 	github.com/vinely/kvdb v0.0.0-20190227093626-92e007cbce7b
-	github.com/vinely/ontchain v0.0.0-20190312032940-396ff2d56311
+	github.com/vinely/ontchain v0.0.0-20190505101324-9c98f169a7cb
 	golang.org/x/crypto v0.0.0-20190228050851-31a38585487a
 )
