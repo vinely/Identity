@@ -30,6 +30,7 @@ type ClaimStatus struct {
 	Header     string `json:"hd"`  // ID of related ClaimHeader
 	Content    string `json:"cnt"` // ID of related ClaimContent
 	Status     bool   `json:"st"`  // status of claims. valid or other status
+	Nonce      string `json:"noc,omitempty"`
 	IssuedAt   int64  `json:"iat,omitempty"`
 	Audience   string `json:"aud,omitempty"`
 	ExpiresAt  int64  `json:"exp,omitempty"`
@@ -129,7 +130,7 @@ func NewClaim(header, content string) (*model.StandardClaim, error) {
 	c.Content = content
 	c.Status = true
 	c.IssuedAt = time.Now().Unix()
-	c.ExpiresAt = time.Now().Add(time.Hour).Unix()
+	// c.ExpiresAt = time.Now().Add(time.Hour).Unix()
 	hd, err := c.Hdr()
 	if err != nil {
 		return nil, err
